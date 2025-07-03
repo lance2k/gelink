@@ -1,5 +1,6 @@
 ## Folder Structure
 
+```text
 app/
     Actions/            # Encapsulate domain-specific actions (e.g., CreatePost, UpdateProfile)
     Http/
@@ -38,3 +39,4 @@ tests/
     Unit/               # Unit tests (services, models)
     Dusk/               # Browser/end-to-end tests (Laravel Dusk)
 lang/                   # Localization files (translations)
+```
