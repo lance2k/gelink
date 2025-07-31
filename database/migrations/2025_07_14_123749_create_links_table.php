@@ -21,7 +21,7 @@ return new class extends Migration
         ->constrained('users')
         ->nullOnDelete();
       $table->string('short_code', 20)->unique();
-      $table->text('original_url');
+      $table->text('long_url');
       $table->boolean('is_custom')->default(false);
 
       //Timestamps WITH TIME ZONE, default CURRENT_TIMESTAMP

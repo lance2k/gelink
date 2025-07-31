@@ -41,3 +41,20 @@ export interface User {
     updated_at: string;
     [key: string]: unknown; // This allows for additional properties...
 }
+
+export interface Link {
+    id: number;
+    short_code: string;
+    long_url: string;
+    is_custom: boolean;
+    created_at: string;
+    updated_at: string;
+    visits_count?: number; // Optional property for visit count
+}
+export interface LinkVisit {
+    id: number;
+    link_id: number;
+    visited_at: string;
+    ip_address: string;
+    user_agent: string;
+}
