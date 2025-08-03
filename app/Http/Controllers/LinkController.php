@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Inertia\Response;
 use Inertia\Inertia;
+use App\Models\Link;
 
 class LinkController extends Controller
 {
@@ -107,5 +108,17 @@ class LinkController extends Controller
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Failed to delete link.']);
         }
+    }
+    public function redirect(string $code): \Illuminate\Http\RedirectResponse
+    {
+        $link = Link::where('short_code', $code)->firstOrFail();
+
+        // Record visit
+        $link->visits()->create([
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+        ]);
+
+        return redirect($link->long_url);
     }
 }
