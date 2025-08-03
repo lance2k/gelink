@@ -6,8 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { type SharedData } from '@/types';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { LoaderCircle } from 'lucide-react';
-import { FormEventHandler } from 'react';
+import { Copy, LoaderCircle } from 'lucide-react';
+import { FormEventHandler, useState } from 'react';
 
 type ShortenLinkForm = {
     longUrl: string;
@@ -15,7 +15,8 @@ type ShortenLinkForm = {
 };
 
 export default function Welcome() {
-    const { auth } = usePage<SharedData>().props;
+    const { auth, flash } = usePage<SharedData & { flash: { success?: boolean; shortUrl?: string; error?: string } }>().props;
+    const [showResult, setShowResult] = useState(!!flash.success);
 
     const { data, setData, post, processing, errors, reset } = useForm<Required<ShortenLinkForm>>({
         longUrl: '',
@@ -24,8 +25,11 @@ export default function Welcome() {
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        post(route('login'), {
-            onFinish: () => reset('customizedLink', 'longUrl'),
+        post(route('links.store'), {
+            onSuccess: () => {
+                reset('customizedLink', 'longUrl');
+                setShowResult(true);
+            },
         });
     };
 
@@ -95,13 +99,12 @@ export default function Welcome() {
                                             <Label htmlFor="password">Customize your link</Label>
                                             <Input
                                                 id="customizedLink"
-                                                type="url"
-                                                required
+                                                type="text"
                                                 tabIndex={2}
                                                 autoComplete="customizedLink"
                                                 value={data.customizedLink}
                                                 onChange={(e) => setData('customizedLink', e.target.value)}
-                                                placeholder="Enter a custom link (optional)"
+                                                placeholder="Enter alias (optional)"
                                             />
                                             <InputError message={errors.customizedLink} />
                                         </div>
@@ -112,7 +115,30 @@ export default function Welcome() {
                                         </Button>
                                     </div>
 
-                                    <div className="text-center text-sm text-muted-foreground">
+                                    {(flash.success && showResult) && (
+                                        <div className="mt-4 flex flex-col gap-4 rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-900 dark:bg-green-950">
+                                            <p className="text-sm text-green-600 dark:text-green-400">
+                                                Your shortened URL is ready!
+                                            </p>
+                                            <div className="flex items-center gap-2">
+                                                <Input
+                                                    readOnly
+                                                    value={flash.shortUrl || ''}
+                                                    className="bg-white dark:bg-black"
+                                                />
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    size="icon"
+                                                    onClick={() => {
+                                                        navigator.clipboard.writeText(flash.shortUrl || '');
+                                                    }}
+                                                >
+                                                    <Copy className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    )}                                    <div className="text-center text-sm text-muted-foreground">
                                         Don't have an account?{' '}
                                         <TextLink href={route('register')} tabIndex={3}>
                                             Sign up

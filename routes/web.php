@@ -16,6 +16,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 Route::get('/links', [LinkController::class, 'index'])->name('links.index');
 Route::post('/links', [LinkController::class, 'store'])->name('links.store');
+Route::get('/links/{id}', [LinkController::class, 'show'])->name('links.show');
+// Keep this as the last route to prevent conflicts
 Route::get('/{code}', [LinkController::class, 'redirect'])->name('links.redirect');
 
 //Protected routes

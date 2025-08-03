@@ -41,23 +41,41 @@ class LinkController extends Controller
         return Inertia::render('Links/Create');
     }
 
+    private function generateShortCode(): string 
+    {
+        do {
+            $code = substr(str_shuffle('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'), 0, 6);
+        } while (Link::where('short_code', $code)->exists());
+        
+        return $code;
+    }
+
     public function store(Request $request): \Illuminate\Http\RedirectResponse
     {
         $data = $request->validate([
-            'url' => 'required|url|max:2048',
-            'title' => 'nullable|string|max:255',
+            'longUrl' => 'required|url|max:2048',
+            'customizedLink' => 'nullable|string|min:3|max:20|alpha_dash|unique:links,short_code',
         ]);
 
         try {
-            $link = auth()->user()->links()->create([
-                ...$data,
-                'short_code' => $this->generateUniqueShortCode(),
-                'is_custom' => false
+            $short_code = $data['customizedLink'] ?? $this->generateShortCode();
+            
+            $link = new Link([
+                'long_url' => $data['longUrl'],
+                'short_code' => $short_code,
+                'is_custom' => !empty($data['customizedLink'])
             ]);
 
-            return redirect()
-                ->route('links.show', $link->id)
-                ->with('success', 'Link created successfully.');
+            if (auth()->check()) {
+                $link->user()->associate(auth()->user());
+            }
+
+            $link->save();
+
+            return back()->with([
+                'success' => true,
+                'shortUrl' => route('links.redirect', $short_code)
+            ]);
         } catch (\Exception $e) {
             return back()
                 ->withErrors(['error' => 'Failed to create link.'])
